@@ -751,14 +751,6 @@ import UIKit
             
             // The labels will also need to be repositioned if the viewport has changed.
             repositionActiveLabels()
-
-            for label in topLabelPool.activeLabels {
-
-                 if let index = topLabelAssociations[label] {
-                    let position = calculatePosition(atIndex: index, value: data[index])
-                    label.frame.origin.y = position.y - 20
-                }
-            }
         }
     }
     
@@ -888,6 +880,14 @@ import UIKit
             let position = calculatePosition(atIndex: 0, value: rangeMin)
             
             label.frame.origin.y = position.y + ref.dataPointLabelTopMargin
+        }
+
+        for label in topLabelPool.activeLabels {
+
+             if let index = topLabelAssociations[label] {
+                let position = calculatePosition(atIndex: index, value: data[index])
+                label.frame.origin.y = position.y - 20
+            }
         }
     }
     
