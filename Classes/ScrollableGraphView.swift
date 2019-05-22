@@ -725,6 +725,8 @@ import UIKit
                 plot.setPlotPointPositions(forNewlyActivatedPoints: intervalForActivePoints(), withData: newData)
             }
         }
+
+        repositionActiveLabels()
         
         referenceLineView?.set(range: range)
     }
@@ -749,6 +751,14 @@ import UIKit
             
             // The labels will also need to be repositioned if the viewport has changed.
             repositionActiveLabels()
+
+            for label in topLabelPool.activeLabels {
+
+                 if let index = topLabelAssociations[label] {
+                    let position = calculatePosition(atIndex: index, value: data[index])
+                    label.frame.origin.y = position.y - 20
+                }
+            }
         }
     }
     
@@ -794,6 +804,9 @@ import UIKit
             plot.dequeueAllAnimations()
         }
     }
+
+    fileprivate let topLabelPool = LabelPool()
+    fileprivate var topLabelAssociations = [UILabel:Int]()
     
     // Labels
     // TODO in 4.1: refactor all label adding & positioning code.
@@ -808,17 +821,26 @@ import UIKit
         // Disable any labels for the deactivated points.
         for point in deactivatedPoints {
             labelPool.deactivateLabel(forPointIndex: point)
+            topLabelPool.deactivateLabel(forPointIndex: point)
         }
         
         // Grab an unused label and update it to the right position for the newly activated poitns
         for point in activatedPoints {
             let label = labelPool.activateLabel(forPointIndex: point)
+            let topLabel = topLabelPool.activateLabel(forPointIndex: point)
             
             label.text = (dataSource?.label(atIndex: point) ?? "")
             label.textColor = ref.dataPointLabelColor
             label.font = ref.dataPointLabelFont
             
             label.sizeToFit()
+
+            topLabel.text = (point < data.count) ? String(data[point]) : ""
+            topLabel.textColor = dataPointLabelColor
+            topLabel.font = dataPointLabelFont
+            topLabelAssociations[topLabel] = point
+
+            topLabel.sizeToFit()
             
             // self.range.min is the current ranges minimum that has been detected
             // self.rangeMin is the minimum that should be used as specified by the user
@@ -827,9 +849,14 @@ import UIKit
             
             label.frame = CGRect(origin: CGPoint(x: position.x - label.frame.width / 2, y: position.y + ref.dataPointLabelTopMargin), size: label.frame.size)
             
+            let topLabelPosition = calculatePosition(atIndex: point, value: data[point])
+            let adjustedTopLabelPosition = CGPoint(x: topLabelPosition.x - topLabel.frame.width / 2, y: topLabelPosition.y - 20)
+            topLabel.frame = CGRect(origin: adjustedTopLabelPosition, size: topLabel.frame.size)
+
             let _ = labelsView.subviews.filter { $0.frame == label.frame }.map { $0.removeFromSuperview() }
             
             labelsView.addSubview(label)
+            labelsView.addSubview(topLabel)
         }
     }
     
