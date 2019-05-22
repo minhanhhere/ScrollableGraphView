@@ -826,10 +826,14 @@ import UIKit
             label.font = ref.dataPointLabelFont
             
             label.sizeToFit()
+            
+            let plot = plots.last
+            let plotData = dataSource?.value(forPlot: plot!, atIndex: point)
 
-            topLabel.text = (point < data.count) ? String(data[point]) : ""
-            topLabel.textColor = dataPointLabelColor
-            topLabel.font = dataPointLabelFont
+            topLabel.text = (point < dataSource?.numberOfPoints() ?? 0)
+                ? String(plotData ?? 0) : ""
+            topLabel.textColor = ref.dataPointLabelColor
+            topLabel.font = ref.dataPointLabelFont
             topLabelAssociations[topLabel] = point
 
             topLabel.sizeToFit()
@@ -841,7 +845,7 @@ import UIKit
             
             label.frame = CGRect(origin: CGPoint(x: position.x - label.frame.width / 2, y: position.y + ref.dataPointLabelTopMargin), size: label.frame.size)
             
-            let topLabelPosition = calculatePosition(atIndex: point, value: data[point])
+            let topLabelPosition = calculatePosition(atIndex: point, value: plotData ?? 0)
             let adjustedTopLabelPosition = CGPoint(x: topLabelPosition.x - topLabel.frame.width / 2, y: topLabelPosition.y - 20)
             topLabel.frame = CGRect(origin: adjustedTopLabelPosition, size: topLabel.frame.size)
 
@@ -882,10 +886,12 @@ import UIKit
             label.frame.origin.y = position.y + ref.dataPointLabelTopMargin
         }
 
+        let plot = plots.last
         for label in topLabelPool.activeLabels {
 
              if let index = topLabelAssociations[label] {
-                let position = calculatePosition(atIndex: index, value: data[index])
+                let plotData = dataSource?.value(forPlot: plot!, atIndex: index)
+                let position = calculatePosition(atIndex: index, value: plotData ?? 0)
                 label.frame.origin.y = position.y - 20
             }
         }
